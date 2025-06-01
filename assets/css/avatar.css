@@ -1,0 +1,67 @@
+/* Avatar styles */
+.avatar-container {
+  margin-bottom: 30px;
+  animation: fadeIn 1s ease-in-out;
+}
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Footer styles */
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 20px 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.2), transparent);
+}
+
+.footer a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer a:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .avatar {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .footer {
+    color: rgba(255, 255, 255, 0.4);
+  }
+  
+  .footer a {
+    color: rgba(255, 255, 255, 0.6);
+  }
+}
