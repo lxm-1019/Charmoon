@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="zh" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About - Charyear</title>
+  <meta name="Description" content="About Charyear">
+  <meta name="color-scheme" content="dark light">
+  <link rel="icon" type="image/x-icon" href="faviconate.ico">
+  <link rel="manifest" href="site.webmanifest">
+  <script>(function(H){H.className=H.className.replace(/\bno-js\b/,'js')})(document.documentElement)</script>
+  <link rel="stylesheet" type="text/css" href="assets/css/main.css"/>
+  <link rel="stylesheet" type="text/css" href="assets/css/arrow.css"/>
+  <link rel="stylesheet" type="text/css" href="assets/css/avatar.css"/>
+  <link rel="stylesheet" type="text/css" href="assets/css/modal.css"/>
+  <link rel="stylesheet" type="text/css" href="assets/css/effects.css"/>
+</head>
+
+<body>
+  <canvas id="bgCanvas"></canvas>
+  <canvas id="mouseTrailCanvas"></canvas>
+  <div class="vi">
+    <div class="avatar-container">
+      <img src="liuyaoyao.jpg" alt="Profile" class="avatar">
+    </div>
+    <h1 class="animate-slide-in-down">Yaoyao</h1>
+    <div class="quote">
+      <span class="quote-line quote-line-start animate-slide-in-left"></span>
+      <span class="quote-icon quote-icon-start animate-slide-in-down">
+        <i class="icon icon-quotes-left"></i>
+      </span>
+      <p class="quote-content animate-slide-in-down">要一个黄昏，满是风，和正在落下的夕阳</p>
+      <p class="quote-content animate-slide-in-down">愿你永远保持孩童般的好奇与勇气，既能在泥泞中种出莲花，也能在云端采摘星光</p>
+      <p><em>Life is not just about the present trivialities, but also poetry and distance</em></p>
+      <span class="quote-icon quote-icon-end animate-slide-in-up">
+        <i class="icon icon-quotes-right"></i>
+      </span>
+      <span class="quote-line quote-line-end animate-slide-in-right"></span>
+    </div>
+    <div class="links">
+      <a href="#" class="animate-slide-in-down" id="charyearLink">Charyear</a>
+      <a href="#" class="animate-slide-in-down" id="yaoyaoLink">Yaoyao</a>
+      <a href="mailto:2681566736@qq.com" class="animate-slide-in-down">QQ</a>
+      <a href="index.html" class="animate-slide-in-down">Home</a>
+    </div>
+    
+    <!-- Photo Modals -->
+    <div class="modal" id="charyearModal">
+      <img src="charyear.jpg" alt="Charyear" class="modal-content">
+    </div>
+    <div class="modal" id="yaoyaoModal">
+      <img src="yaoyao.jpg" alt="Yaoyao" class="modal-content">
+    </div>
+    <div class="footer">
+      <span>@charyear and liuyaoyao</span>
+    </div>
+  </div>
+
+  <script src="assets/vendors/jquery-3.3.1.min.js"></script>
+  <script>
+    $(function () {
+      var SLIDE_IN_DOWN = { opacity: 1, top: 0 };
+      var SLIDE_IN_UP = { opacity: 1, bottom: 0 };
+      var SLIDE_IN_LEFT = { left: 0 };
+      var SLIDE_IN_RIGHT = { right: 0 };
+
+      executeAnimations();
+
+      function executeAnimations() {
+        $.when()
+          .then(animateTitle)
+          .then(animateQuote)
+          .then(animateLinks)
+          .then(animateLocation);
+      }
+
+      function animateTitle() {
+        return animate('h1', SLIDE_IN_DOWN);
+      }
+
+      function animateQuote() {
+        return $.when(
+          animate('.quote-line-start', SLIDE_IN_LEFT),
+          animate('.quote-line-end', SLIDE_IN_RIGHT),
+          animate('.quote-icon-start', SLIDE_IN_DOWN),
+          animate('.quote-icon-end', SLIDE_IN_UP)
+        )
+          .then(function () {
+            return animate('.quote-content', SLIDE_IN_DOWN);
+          })
+          .then(function () {
+            return animate('.quote-author', SLIDE_IN_DOWN);
+          });
+      }
+
+      function animateLinks() {
+        var DELAY_STEP = 200;
+        var elements = $('.links a');
+        var concurrent = $.makeArray(elements)
+          .map(function (element, index) {
+            return animate(element, SLIDE_IN_DOWN, index * DELAY_STEP);
+          });
+
+        return $.when(...concurrent);
+      }
+
+      function animateLocation() {
+        return $.when(
+          animate('.location-icon', SLIDE_IN_UP),
+          animate('.location-text', SLIDE_IN_DOWN)
+        );
+      }
+
+      function animate(selector, properties, delay, options) {
+        delay = delay || 0;
+        return $(selector).delay(delay)
+          .animate(properties, options)
+          .promise();
+      }
+
+      // Modal functionality
+      function showModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.classList.add('show');
+        
+        // Auto close after 2 seconds
+        setTimeout(() => {
+          modal.classList.add('closing');
+          setTimeout(() => {
+            modal.classList.remove('show', 'closing');
+          }, 300);
+        }, 2000);
+      }
+
+      // Add click handlers
+      document.getElementById('charyearLink').addEventListener('click', function(e) {
+        e.preventDefault();
+        showModal('charyearModal');
+      });
+
+      document.getElementById('yaoyaoLink').addEventListener('click', function(e) {
+        e.preventDefault();
+        showModal('yaoyaoModal');
+      });
+
+      // Close modal when clicking outside
+      document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+          if (e.target === this) {
+            modal.classList.add('closing');
+            setTimeout(() => {
+              modal.classList.remove('show', 'closing');
+            }, 300);
+          }
+        });
+      });
+    });
+
+    // Enhanced background animation with shooting stars
+    (function() {
+      const canvas = document.getElementById('bgCanvas');
+      const ctx = canvas.getContext('2d');
+      let particles = [];
+      let shootingStars = [];
+      let twinklingStars = [];
+      const particleCount = 150;
+      const connectionDistance = 80;
+      const twinklingStarCount = 50;
+      let resizeTimeout;
+
+      // Debounced resize handler
+      function handleResize() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+          init();
+        }, 250);
+      }
+
+      // Initial canvas setup
+      function setupCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+
+      class TwinklingStar {
+        constructor() {
+          this.reset();
+        }
+
+        reset() {
+          // Distribute stars evenly across the screen
+          this.x = Math.random() * window.innerWidth;
+          this.y = Math.random() * window.innerHeight;
+          this.size = Math.random() * 2 + 1;
+          this.brightness = Math.random() * 0.5 + 0.5;
+          this.twinkleSpeed = Math.random() * 0.02 + 0.01;
+          this.angle = Math.random() * Math.PI * 2;
+        }
+
+        draw() {
+          this.angle += this.twinkleSpeed;
+          const twinkle = Math.sin(this.angle) * 0.5 + 0.5;
+          const opacity = this.brightness * twinkle;
+
+          // Star glow
+          const gradient = ctx.createRadialGradient(
+            this.x, this.y, 0,
+            this.x, this.y, this.size * 2
+          );
+          gradient.addColorStop(0, `rgba(255, 255, 255, ${opacity})`);
+          gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+          ctx.beginPath();
+          ctx.fillStyle = gradient;
+          ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Star core
+          ctx.beginPath();
+          ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 1.5})`;
+          ctx.arc(this.x, this.y, this.size * 0.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      class Particle {
+        constructor() {
+          this.reset();
+        }
+
+        reset() {
+          // Distribute particles evenly across the screen
+          this.x = Math.random() * window.innerWidth;
+          this.y = Math.random() * window.innerHeight;
+          this.size = Math.random() * 1.5 + 0.5;
+          this.speedX = (Math.random() - 0.5) * 0.3;
+          this.speedY = (Math.random() - 0.5) * 0.3;
+          this.brightness = Math.random() * 0.5 + 0.5;
+        }
+
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${this.brightness * 0.5})`;
+          ctx.fill();
+        }
+
+        update() {
+          this.x += this.speedX;
+          this.y += this.speedY;
+
+          // Wrap around edges using window dimensions
+          if (this.x < 0) this.x = window.innerWidth;
+          if (this.x > window.innerWidth) this.x = 0;
+          if (this.y < 0) this.y = window.innerHeight;
+          if (this.y > window.innerHeight) this.y = 0;
+        }
+      }
+
+      class ShootingStar {
+        constructor() {
+          this.reset();
+        }
+
+        reset() {
+          // Random position in left third of screen, top half
+          this.x = Math.random() * (canvas.width / 3);
+          this.y = Math.random() * (canvas.height / 2);
+          this.length = Math.random() * 150 + 200;
+          this.speed = Math.random() * 2 + 1.5;
+          // Calculate angle to ensure star reaches bottom of screen
+          const targetY = canvas.height + this.length;
+          const targetX = canvas.width + this.length;
+          const dx = targetX - this.x;
+          const dy = targetY - this.y;
+          this.angle = Math.atan2(dy, dx);
+          this.opacity = 0;
+          this.fadeInTime = 50;
+          this.fadeOutTime = 50;
+          this.life = 0;
+          this.totalLife = Math.max(canvas.width, canvas.height) / this.speed; // Ensure star crosses entire screen
+        }
+
+        draw() {
+          const tailX = this.x - Math.cos(this.angle) * this.length;
+          const tailY = this.y - Math.sin(this.angle) * this.length;
+
+          const gradient = ctx.createLinearGradient(this.x, this.y, tailX, tailY);
+          gradient.addColorStop(0, `rgba(255, 255, 255, ${this.opacity})`);
+          gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+          ctx.beginPath();
+          ctx.strokeStyle = gradient;
+          ctx.lineWidth = 2;
+          ctx.moveTo(this.x, this.y);
+          ctx.lineTo(tailX, tailY);
+          ctx.stroke();
+        }
+
+        update() {
+          this.life++;
+
+          // Fade in
+          if (this.life < this.fadeInTime) {
+            this.opacity = this.life / this.fadeInTime;
+          }
+          // Fade out
+          else if (this.life > this.totalLife - this.fadeOutTime) {
+            this.opacity = (this.totalLife - this.life) / this.fadeOutTime;
+          }
+          // Full opacity
+          else {
+            this.opacity = 1;
+          }
+
+          this.x += Math.cos(this.angle) * this.speed;
+          this.y += Math.sin(this.angle) * this.speed;
+
+          // Reset when star is completely off screen
+          if (this.x > canvas.width + this.length || this.y > canvas.height + this.length) {
+            this.reset();
+          }
+        }
+      }
+
+      function init() {
+        // Initialize particles
+        particles = [];
+        for (let i = 0; i < particleCount; i++) {
+          particles.push(new Particle());
+        }
+
+        // Initialize shooting stars
+        shootingStars = [];
+        for (let i = 0; i < 3; i++) {
+          shootingStars.push(new ShootingStar());
+        }
+
+        // Initialize twinkling stars
+        twinklingStars = [];
+        for (let i = 0; i < twinklingStarCount; i++) {
+          twinklingStars.push(new TwinklingStar());
+        }
+      }
+
+      function animate() {
+        ctx.fillStyle = 'rgba(10, 10, 15, 0.2)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Update and draw particles
+        particles.forEach(particle => {
+          particle.update();
+          particle.draw();
+        });
+
+        // Draw twinkling stars
+        twinklingStars.forEach(star => {
+          star.draw();
+        });
+
+        // Draw connections
+        ctx.beginPath();
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            let dx = particles[i].x - particles[j].x;
+            let dy = particles[i].y - particles[j].y;
+            let distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < connectionDistance) {
+              ctx.strokeStyle = `rgba(255, 255, 255, ${(connectionDistance - distance) / connectionDistance * 0.15})`;
+              ctx.lineWidth = 0.5;
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+            }
+          }
+        }
+        ctx.stroke();
+
+        // Update and draw shooting stars
+        shootingStars.forEach(star => {
+          star.update();
+          star.draw();
+        });
+
+        // Randomly add new shooting stars
+        if (Math.random() < 0.01) {
+          shootingStars.push(new ShootingStar());
+          if (shootingStars.length > 2) {
+            shootingStars.shift();
+          }
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      window.addEventListener('resize', handleResize);
+      setupCanvas();
+      init();
+      animate();
+    })();
+
+    // Enhanced mouse trail
+    (function() {
+      const canvas = document.getElementById('mouseTrailCanvas');
+      const ctx = canvas.getContext('2d');
+      const points = [];
+      const maxPoints = 50;
+      const trailDistance = 50;
+      let mouse = { x: 0, y: 0 };
+      let lastMouse = { x: 0, y: 0 };
+
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+
+      class Point {
+        constructor(x, y) {
+          this.x = x;
+          this.y = y;
+          this.age = 0;
+          this.maxAge = 30;
+          this.size = Math.random() * 4 + 3;
+          this.color = `hsla(${Math.random() * 60 + 200}, 100%, 80%, `;
+        }
+
+        update() {
+          this.age++;
+          return this.age < this.maxAge;
+        }
+
+        draw() {
+          const opacity = 1 - this.age / this.maxAge;
+          ctx.fillStyle = this.color + opacity + ')';
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size * (1 - opacity), 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Add new points if mouse moved
+        const dx = mouse.x - lastMouse.x;
+        const dy = mouse.y - lastMouse.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance > trailDistance) {
+          points.push(new Point(mouse.x, mouse.y));
+          if (points.length > maxPoints) points.shift();
+          lastMouse.x = mouse.x;
+          lastMouse.y = mouse.y;
+        }
+
+        // Update and draw points
+        for (let i = points.length - 1; i >= 0; i--) {
+          if (!points[i].update()) {
+            points.splice(i, 1);
+            continue;
+          }
+          points[i].draw();
+
+          // Draw connections
+          if (i > 0) {
+            const prev = points[i - 1];
+            const opacity = 1 - points[i].age / points[i].maxAge;
+            ctx.strokeStyle = `hsla(${Math.random() * 60 + 200}, 100%, 70%, ${opacity * 0.5})`;
+            ctx.lineWidth = points[i].size * (1 - opacity);
+            ctx.beginPath();
+            ctx.moveTo(prev.x, prev.y);
+            ctx.lineTo(points[i].x, points[i].y);
+            ctx.stroke();
+          }
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      document.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+      });
+
+      window.addEventListener('resize', resizeCanvas);
+      resizeCanvas();
+      animate();
+    })();
+  </script>
+</body>
+</html>

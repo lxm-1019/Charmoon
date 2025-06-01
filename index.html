@@ -11,11 +11,16 @@
   <link rel="manifest" href="site.webmanifest">
   <script>(function(H){H.className=H.className.replace(/\bno-js\b/,'js')})(document.documentElement)</script>
   <link rel="stylesheet" type="text/css" href="assets/css/main.css"/>
+  <link rel="stylesheet" type="text/css" href="assets/css/arrow.css"/>
+  <link rel="stylesheet" type="text/css" href="assets/css/avatar.css"/>
 </head>
 
 <body>
   <canvas id="bgCanvas"></canvas>
   <div class="vi">
+    <div class="avatar-container">
+      <img src="title.jpg" alt="Profile" class="avatar">
+    </div>
     <h1 class="animate-slide-in-down">Charyear</h1>
     <div class="quote">
       <span class="quote-line quote-line-start animate-slide-in-left"></span>
@@ -45,6 +50,8 @@
       Navigating to: <span class="relocate-location"></span>...
     </div>
   </div>
+  <div class="scroll-arrow" id="scrollArrow"></div>
+  <div class="page-transition" id="pageTransition"></div>
 
   <script src="assets/vendors/jquery-3.3.1.min.js"></script>
   <script>
@@ -92,7 +99,7 @@
             return animate(element, SLIDE_IN_DOWN, index * DELAY_STEP);
           });
 
-        return $.when.apply($, concurrent);
+        return $.when(...concurrent);
       }
 
       function animateLocation() {
@@ -123,6 +130,46 @@
           }
         });
       }
+      // Show scroll arrow after animations
+      setTimeout(function() {
+        document.getElementById('scrollArrow').classList.add('visible');
+      }, 2000);
+
+      // Handle scroll arrow drag
+      var arrow = document.getElementById('scrollArrow');
+      var pageTransition = document.getElementById('pageTransition');
+      var isDragging = false;
+      var startY = 0;
+      var dragThreshold = 100; // Pixels needed to drag before transition
+
+      arrow.addEventListener('mousedown', function(e) {
+        isDragging = true;
+        startY = e.clientY;
+        arrow.classList.add('dragging');
+      });
+
+      document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        
+        var deltaY = startY - e.clientY;
+        var opacity = Math.min(deltaY / dragThreshold, 1);
+        pageTransition.style.opacity = opacity;
+
+        if (deltaY >= dragThreshold) {
+          isDragging = false;
+          pageTransition.classList.add('active');
+          setTimeout(function() {
+            window.location.href = 'about.html';
+          }, 300);
+        }
+      });
+
+      document.addEventListener('mouseup', function() {
+        if (!isDragging) return;
+        isDragging = false;
+        arrow.classList.remove('dragging');
+        pageTransition.style.opacity = 0;
+      });
     });
     
     // 优化的背景动画
