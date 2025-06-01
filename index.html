@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="zh" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Charyear</title>
+  <meta name="Description" content="Home Page of iissnan">
+  <meta name="color-scheme" content="dark light">
+  <link rel="icon" type="image/x-icon" href="faviconate.ico">
+  <link rel="manifest" href="site.webmanifest">
+  <script>(function(H){H.className=H.className.replace(/\bno-js\b/,'js')})(document.documentElement)</script>
+  <link rel="stylesheet" type="text/css" href="assets/css/main.css"/>
+</head>
+
+<body>
+  <canvas id="bgCanvas"></canvas>
+  <div class="vi">
+    <h1 class="animate-slide-in-down">Charyear</h1>
+    <div class="quote">
+      <span class="quote-line quote-line-start animate-slide-in-left"></span>
+      <span class="quote-icon quote-icon-start animate-slide-in-down">
+        <i class="icon icon-quotes-left"></i>
+      </span>
+      <p class="quote-content animate-slide-in-down">在满地都是六便士的街上，他抬起头看到了月光</p>
+      <p><em>有人见尘埃，有人见星辰</em></p>
+      <span class="quote-icon quote-icon-end animate-slide-in-up">
+        <i class="icon icon-quotes-right"></i>
+      </span>
+      <span class="quote-line quote-line-end animate-slide-in-right"></span>
+    </div>
+    <div class="links">
+      <a href="https://github.com/Charyear" class="animate-slide-in-down">GitHub</a>
+      <a href="mailto:2099612139@qq.com" class="animate-slide-in-down">QQ</a>
+      <a href="mailto:charyear@yeah.net" class="animate-slide-in-down">NetEase</a>
+      <a href="https://blog.csdn.net/weixin_73931312?spm=1010.2135.3001.10640" class="animate-slide-in-down">CSDN</a>
+    </div>
+    <div class="location">
+      <span class="location-icon animate-slide-in-up">
+        <i class="icon icon-map-pin"></i>
+      </span>
+      <span class="location-text animate-slide-in-down">Charyear - Changsha, China</span>
+    </div>
+    <div class="relocating">
+      Navigating to: <span class="relocate-location"></span>...
+    </div>
+  </div>
+
+  <script src="assets/vendors/jquery-3.3.1.min.js"></script>
+  <script>
+    $(function () {
+      var SLIDE_IN_DOWN = { opacity: 1, top: 0 };
+      var SLIDE_IN_UP = { opacity: 1, bottom: 0 };
+      var SLIDE_IN_LEFT = { left: 0 };
+      var SLIDE_IN_RIGHT = { right: 0 };
+
+      registerCheatCode();
+      executeAnimations();
+
+      function executeAnimations() {
+        $.when()
+          .then(animateTitle)
+          .then(animateQuote)
+          .then(animateLinks)
+          .then(animateLocation);
+      }
+
+      function animateTitle() {
+        return animate('h1', SLIDE_IN_DOWN);
+      }
+
+      function animateQuote() {
+        return $.when(
+          animate('.quote-line-start', SLIDE_IN_LEFT),
+          animate('.quote-line-end',SLIDE_IN_RIGHT),
+          animate('.quote-icon-start', SLIDE_IN_DOWN),
+          animate('.quote-icon-end', SLIDE_IN_UP)
+        )
+          .then(function () {
+            return animate('.quote-content', SLIDE_IN_DOWN);
+          })
+          .then(function () {
+            return animate('.quote-author', SLIDE_IN_DOWN);
+          });
+      }
+
+      function animateLinks() {
+        var DELAY_STEP = 200;
+        var elements = $('.links a');
+        var concurrent = $.makeArray(elements)
+          .map(function (element, index) {
+            return animate(element, SLIDE_IN_DOWN, index * DELAY_STEP);
+          });
+
+        return $.when.apply($, concurrent);
+      }
+
+      function animateLocation() {
+        return $.when(
+          animate('.location-icon', SLIDE_IN_UP),
+          animate('.location-text', SLIDE_IN_DOWN)
+        );
+      }
+
+      function animate(selector, properties, delay, options) {
+        delay = delay || 0;
+        return $(selector).delay(delay)
+          .animate(properties, options)
+          .promise();
+      }
+
+      function registerCheatCode() {
+        $(document.body).on('keydown', function (event) {
+          var KEY_B = 66;
+
+          if (event.which === KEY_B) {
+            $('.relocate-location').text('Bookmark Page');
+            $('.relocating').css('opacity', 1);
+
+            window.setTimeout(function () {
+              window.location.href = '/bookmarks.html';
+            }, 1000);
+          }
+        });
+      }
+    });
+    
+    // 优化的背景动画
+    (function() {
+      var canvas = document.getElementById('bgCanvas');
+      var ctx = canvas.getContext('2d');
+      var particles = [];
+      var maxDistance = 100;
+      
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      
+      function createParticle() {
+        return {
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 2 + 1,
+          speedX: Math.random() * 1 - 0.5,
+          speedY: Math.random() * 1 - 0.5,
+          color: `rgba(255, 255, 255, ${Math.random() * 0.5 + 0.2})`
+        };
+      }
+      
+      function initParticles() {
+        for(var i = 0; i < 100; i++) {
+          particles.push(createParticle());
+        }
+      }
+      
+      function drawParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // 绘制粒子和连线
+        particles.forEach(function(p1, i) {
+          ctx.beginPath();
+          ctx.arc(p1.x, p1.y, p1.size, 0, Math.PI * 2);
+          ctx.fillStyle = p1.color;
+          ctx.fill();
+          
+          // 绘制粒子之间的连线
+          particles.slice(i + 1).forEach(function(p2) {
+            var distance = Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+            if (distance < maxDistance) {
+              ctx.beginPath();
+              ctx.strokeStyle = `rgba(255, 255, 255, ${(maxDistance - distance) / maxDistance * 0.2})`;
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.stroke();
+            }
+          });
+          
+          // 更新粒子位置
+          p1.x += p1.speedX;
+          p1.y += p1.speedY;
+          
+          if(p1.x < 0 || p1.x > canvas.width) p1.speedX *= -1;
+          if(p1.y < 0 || p1.y > canvas.height) p1.speedY *= -1;
+        });
+        
+        requestAnimationFrame(drawParticles);
+      }
+      
+      window.addEventListener('resize', resizeCanvas);
+      resizeCanvas();
+      initParticles();
+      drawParticles();
+    })();
+  
+    // 添加鼠标尾巴特效
+    // 修改鼠标拖尾效果代码
+    (function() {
+      var canvas = document.createElement('canvas');
+      canvas.style.cssText = 'position:fixed;top:0;left:0;pointer-events:none;z-index:9999;';
+      document.body.appendChild(canvas);
+      var ctx = canvas.getContext('2d');
+      var points = [];
+      var maxPoints = 30;
+      
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      
+      window.addEventListener('resize', resizeCanvas);
+      resizeCanvas();
+      
+      window.addEventListener('mousemove', function(e) {
+        points.push({
+          x: e.clientX,
+          y: e.clientY,
+          size: Math.random() * 2 + 2,
+          age: 0
+        });
+        
+        if (points.length > maxPoints) {
+          points.shift();
+        }
+      });
+      
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        for (var i = 0; i < points.length; i++) {
+          var point = points[i];
+          var opacity = 1 - point.age / 50;
+          
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, point.size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+          ctx.fill();
+          
+          if (i > 0) {
+            var prevPoint = points[i - 1];
+            ctx.beginPath();
+            ctx.moveTo(prevPoint.x, prevPoint.y);
+            ctx.lineTo(point.x, point.y);
+            ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.5})`;
+            ctx.lineWidth = point.size * 0.8;
+            ctx.stroke();
+          }
+          
+          point.age++;
+        }
+        
+        points = points.filter(point => point.age < 50);
+        requestAnimationFrame(animate);
+      }
+      
+      animate();
+    })();
+  </script>
+</body>
+</html>
