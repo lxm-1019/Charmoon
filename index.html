@@ -61,6 +61,82 @@
       var SLIDE_IN_LEFT = { left: 0 };
       var SLIDE_IN_RIGHT = { right: 0 };
 
+      // Navigation state
+      let isDragging = false;
+      let startY = 0;
+      let startTime = 0;
+      const DRAG_THRESHOLD = 100;
+      const TIME_THRESHOLD = 300;
+      const overlay = document.getElementById('pageTransition');
+
+      // Handle both touch and mouse events for page-wide navigation
+      function handleDragStart(e) {
+        isDragging = true;
+        startY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+        startTime = Date.now();
+      }
+
+      function handleDragMove(e) {
+        if (!isDragging) return;
+
+        const currentY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+        const dragDistance = startY - currentY;
+        const opacity = Math.min(dragDistance / DRAG_THRESHOLD, 1);
+
+        if (dragDistance > 0) {
+          overlay.style.opacity = opacity;
+        }
+
+        // Prevent default only if dragging upward
+        if (dragDistance > 0) {
+          e.preventDefault();
+        }
+      }
+
+      function handleDragEnd(e) {
+        if (!isDragging) return;
+        isDragging = false;
+
+        let endY;
+        if (e.type.includes('touch')) {
+          endY = e.changedTouches ? e.changedTouches[0].clientY : startY;
+        } else {
+          endY = e.clientY;
+        }
+        const dragDistance = startY - endY;
+        const dragTime = Date.now() - startTime;
+
+        if (dragDistance > DRAG_THRESHOLD && dragTime < TIME_THRESHOLD) {
+          // Fast swipe
+          navigateToAbout();
+        } else if (dragDistance > DRAG_THRESHOLD * 1.5) {
+          // Long drag
+          navigateToAbout();
+        } else {
+          // Reset overlay if not navigating
+          overlay.style.opacity = 0;
+          document.body.style.filter = '';
+        }
+      }
+
+      function navigateToAbout() {
+        overlay.style.opacity = 1;
+        setTimeout(() => {
+          window.location.href = 'about.html';
+        }, 300);
+      }
+
+      // Add touch event listeners to body
+      document.body.addEventListener('touchstart', handleDragStart, { passive: false });
+      document.body.addEventListener('touchmove', handleDragMove, { passive: false });
+      document.body.addEventListener('touchend', handleDragEnd);
+
+      // Add mouse event listeners to body
+      document.body.addEventListener('mousedown', handleDragStart);
+      document.body.addEventListener('mousemove', handleDragMove);
+      document.body.addEventListener('mouseup', handleDragEnd);
+      document.body.addEventListener('mouseleave', handleDragEnd);
+
       registerCheatCode();
       executeAnimations();
 
@@ -137,26 +213,25 @@
 
       // Handle scroll arrow drag
       var arrow = document.getElementById('scrollArrow');
+      var isArrowDragging = false;
+      var arrowStartY = 0;
       var pageTransition = document.getElementById('pageTransition');
-      var isDragging = false;
-      var startY = 0;
-      var dragThreshold = 100; // Pixels needed to drag before transition
 
       arrow.addEventListener('mousedown', function(e) {
-        isDragging = true;
-        startY = e.clientY;
+        isArrowDragging = true;
+        arrowStartY = e.clientY;
         arrow.classList.add('dragging');
       });
 
       document.addEventListener('mousemove', function(e) {
-        if (!isDragging) return;
-        
-        var deltaY = startY - e.clientY;
-        var opacity = Math.min(deltaY / dragThreshold, 1);
+        if (!isArrowDragging) return;
+        var currentY = e.clientY;
+        var dragDistance = currentY - arrowStartY;
+        var opacity = Math.min(dragDistance / 100, 1);
         pageTransition.style.opacity = opacity;
 
-        if (deltaY >= dragThreshold) {
-          isDragging = false;
+        if (dragDistance >= 100) {
+          isArrowDragging = false;
           pageTransition.classList.add('active');
           setTimeout(function() {
             window.location.href = 'about.html';
@@ -165,8 +240,8 @@
       });
 
       document.addEventListener('mouseup', function() {
-        if (!isDragging) return;
-        isDragging = false;
+        if (!isArrowDragging) return;
+        isArrowDragging = false;
         arrow.classList.remove('dragging');
         pageTransition.style.opacity = 0;
       });
@@ -243,64 +318,64 @@
     // 添加鼠标尾巴特效
     // 修改鼠标拖尾效果代码
     (function() {
-      var canvas = document.createElement('canvas');
-      canvas.style.cssText = 'position:fixed;top:0;left:0;pointer-events:none;z-index:9999;';
-      document.body.appendChild(canvas);
-      var ctx = canvas.getContext('2d');
-      var points = [];
-      var maxPoints = 30;
+      var trailCanvas = document.createElement('canvas');
+      trailCanvas.style.cssText = 'position:fixed;top:0;left:0;pointer-events:none;z-index:9999;';
+      document.body.appendChild(trailCanvas);
+      var trailCtx = trailCanvas.getContext('2d');
+      var trailPoints = [];
+      var maxTrailPoints = 30;
       
-      function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+      function resizeTrailCanvas() {
+        trailCanvas.width = window.innerWidth;
+        trailCanvas.height = window.innerHeight;
       }
       
-      window.addEventListener('resize', resizeCanvas);
-      resizeCanvas();
+      window.addEventListener('resize', resizeTrailCanvas);
+      resizeTrailCanvas();
       
       window.addEventListener('mousemove', function(e) {
-        points.push({
+        trailPoints.push({
           x: e.clientX,
           y: e.clientY,
           size: Math.random() * 2 + 2,
           age: 0
         });
         
-        if (points.length > maxPoints) {
-          points.shift();
+        if (trailPoints.length > maxTrailPoints) {
+          trailPoints.shift();
         }
       });
       
-      function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      function animateTrail() {
+        trailCtx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
         
-        for (var i = 0; i < points.length; i++) {
-          var point = points[i];
+        for (var i = 0; i < trailPoints.length; i++) {
+          var point = trailPoints[i];
           var opacity = 1 - point.age / 50;
           
-          ctx.beginPath();
-          ctx.arc(point.x, point.y, point.size, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-          ctx.fill();
+          trailCtx.beginPath();
+          trailCtx.arc(point.x, point.y, point.size, 0, Math.PI * 2);
+          trailCtx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+          trailCtx.fill();
           
           if (i > 0) {
-            var prevPoint = points[i - 1];
-            ctx.beginPath();
-            ctx.moveTo(prevPoint.x, prevPoint.y);
-            ctx.lineTo(point.x, point.y);
-            ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.5})`;
-            ctx.lineWidth = point.size * 0.8;
-            ctx.stroke();
+            var prevPoint = trailPoints[i - 1];
+            trailCtx.beginPath();
+            trailCtx.moveTo(prevPoint.x, prevPoint.y);
+            trailCtx.lineTo(point.x, point.y);
+            trailCtx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.5})`;
+            trailCtx.lineWidth = point.size * 0.8;
+            trailCtx.stroke();
           }
           
           point.age++;
         }
         
-        points = points.filter(point => point.age < 50);
-        requestAnimationFrame(animate);
+        trailPoints = trailPoints.filter(point => point.age < 50);
+        requestAnimationFrame(animateTrail);
       }
       
-      animate();
+      animateTrail();
     })();
   </script>
 </body>
